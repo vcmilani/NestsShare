@@ -41,3 +41,4 @@ pip-wheel-metadata/
 
 # NestShare
 .secret_key
+nestsshare-*.zip
