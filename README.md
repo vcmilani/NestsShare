@@ -92,6 +92,31 @@ nestshare/
 | POST | `/api/disks/umount` | Desmontar |
 | POST | `/api/disks/fstab` | Adicionar ao fstab |
 
+## Time Machine
+
+Para ativar um share como destino de Time Machine, crie o share com `time_machine: true` via API:
+
+```bash
+curl -k -b cookies.txt -X POST https://<IP>:5000/api/shares \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "TimeMachine",
+    "path": "/mnt/timemachine",
+    "time_machine": true,
+    "max_size_gb": 500
+  }'
+```
+
+> `max_size_gb` é opcional — omita para sem limite.  
+> O `-k` ignora o aviso de certificado auto-assinado.  
+> Obtenha o cookie de sessão fazendo login primeiro:
+> ```bash
+> curl -k -c cookies.txt -X POST https://<IP>:5000/login \
+>   -d "username=SEU_USUARIO&password=SUA_SENHA"
+> ```
+
+O NestShare já inclui no `[global]` do `smb.conf` as diretivas `vfs objects = catia fruit streams_xattr` e `fruit:aapl = yes`, necessárias para o Time Machine funcionar.
+
 ## Família Nest
 
 - **NestVault** — sistema de backup local
