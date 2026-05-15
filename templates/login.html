@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NestShare — Login</title>
+<style>
+:root {
+  --bg:       #0d0f14;
+  --surface:  #13161e;
+  --surface2: #1a1e2a;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.13);
+  --text:     #dde1f0;
+  --muted:    #7a80a0;
+  --accent:   #5b8af5;
+  --accent2:  #7c5bf5;
+  --red:      #f76060;
+  --rdim:     rgba(247,96,96,0.09);
+  --r:        10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:14px;line-height:1.6;
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+}
+.login-wrap{width:100%;max-width:380px;padding:24px}
+.brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:32px}
+.brand-logo{
+  width:42px;height:42px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.brand-text h1{font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.brand-text p{font-size:12px;color:var(--muted)}
+.card{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:14px;padding:28px;
+}
+.card-title{font-size:15px;font-weight:600;margin-bottom:20px;color:var(--text)}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+label{font-size:12px;font-weight:500;color:var(--muted)}
+input[type=text],input[type=password]{
+  background:var(--bg);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text);font-size:13px;padding:9px 12px;outline:none;
+  transition:border-color .15s;width:100%;font-family:inherit;
+}
+input:focus{border-color:var(--accent)}
+.btn-login{
+  width:100%;padding:10px;border-radius:8px;font-size:14px;font-weight:600;
+  cursor:pointer;border:none;background:var(--accent);color:#fff;
+  transition:background .15s;margin-top:6px;font-family:inherit;
+}
+.btn-login:hover{background:#4a79e4}
+.error{
+  background:var(--rdim);border:1px solid rgba(247,96,96,.2);
+  border-radius:8px;padding:10px 13px;font-size:13px;color:var(--red);
+  margin-bottom:16px;
+}
+.hint{font-size:11px;color:var(--muted);text-align:center;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="login-wrap">
+  <div class="brand">
+    <div class="brand-logo">🪺</div>
+    <div class="brand-text">
+      <h1>NestShare</h1>
+      <p>Dashboard de rede</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Entrar</div>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('login', next=request.args.get('next','')) }}">
+      <div class="form-group">
+        <label for="username">Usuário</label>
+        <input type="text" id="username" name="username" autocomplete="username"
+               autofocus value="{{ request.form.get('username', '') }}"/>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" name="password" autocomplete="current-password"/>
+      </div>
+      <button type="submit" class="btn-login">Entrar</button>
+    </form>
+
+    <p class="hint">Use o usuário e senha do sistema (Raspberry Pi)</p>
+  </div>
+</div>
+</body>
+</html>

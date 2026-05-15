@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NestShare</title>
+<style>
+:root {
+  --bg:       #0d0f14;
+  --surface:  #13161e;
+  --surface2: #1a1e2a;
+  --surface3: #202435;
+  --border:   rgba(255,255,255,0.07);
+  --border2:  rgba(255,255,255,0.13);
+  --text:     #dde1f0;
+  --muted:    #7a80a0;
+  --accent:   #5b8af5;
+  --accent2:  #7c5bf5;
+  --adim:     rgba(91,138,245,0.1);
+  --green:    #3fd68e;
+  --gdim:     rgba(63,214,142,0.1);
+  --red:      #f76060;
+  --rdim:     rgba(247,96,96,0.09);
+  --amber:    #f5a020;
+  --adim2:    rgba(245,160,32,0.1);
+  --purple:   #a06cf5;
+  --mono:     'SF Mono','Fira Code','Cascadia Code',monospace;
+  --r:        10px;
+  --sidebar:  240px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Helvetica Neue',sans-serif;font-size:14px;line-height:1.6;min-height:100vh;display:flex}
+
+/* ── Sidebar ── */
+aside{
+  width:var(--sidebar);min-width:var(--sidebar);
+  background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:100;
+}
+.brand{padding:20px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.brand-logo{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+}
+.brand-text h1{font-size:14px;font-weight:700;letter-spacing:-0.3px;line-height:1.2}
+.brand-text p{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+nav{padding:12px 10px;flex:1}
+.nav-section{font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--muted);padding:0 8px;margin:14px 0 4px}
+.nav-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:7px;
+  color:var(--muted);text-decoration:none;font-size:13px;
+  cursor:pointer;transition:all .15s;margin-bottom:1px;border:none;background:none;width:100%;text-align:left;
+}
+.nav-item:hover{background:var(--border);color:var(--text)}
+.nav-item.active{background:var(--adim);color:var(--accent)}
+.nav-item .ni{width:18px;text-align:center;font-size:15px}
+.nav-badge{margin-left:auto;font-size:11px;font-weight:600;background:var(--adim);color:var(--accent);padding:1px 7px;border-radius:20px}
+
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border)}
+.svc-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.svc-label{font-size:12px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.dot-green{background:var(--green)}
+.dot-red{background:var(--red)}
+.dot-amber{background:var(--amber)}
+
+/* ── Main ── */
+.main-wrap{margin-left:var(--sidebar);flex:1;min-height:100vh}
+.topbar{
+  background:var(--surface);border-bottom:1px solid var(--border);
+  padding:0 32px;height:56px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.page-title{font-size:16px;font-weight:600;letter-spacing:-0.3px}
+.page-sub{font-size:12px;color:var(--muted)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+
+.content{padding:28px 32px;max-width:1040px}
+
+/* ── Pages ── */
+.page{display:none}
+.page.active{display:block}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;margin-bottom:18px}
+.card-title{font-size:11px;font-weight:600;letter-spacing:.7px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.card-grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+
+/* ── Metric cards ── */
+.metric{background:var(--surface2);border-radius:8px;padding:14px 16px}
+.metric-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.metric-value{font-size:22px;font-weight:600;letter-spacing:-0.5px}
+.metric-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.metric-green .metric-value{color:var(--green)}
+.metric-amber .metric-value{color:var(--amber)}
+.metric-accent .metric-value{color:var(--accent)}
+
+/* ── Badges ── */
+.badge{font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;display:inline-block}
+.badge-green{background:var(--gdim);color:var(--green)}
+.badge-red  {background:var(--rdim);color:var(--red)}
+.badge-amber{background:var(--adim2);color:var(--amber)}
+.badge-blue {background:var(--adim);color:var(--accent)}
+.badge-purple{background:rgba(160,108,245,0.1);color:var(--purple)}
+
+/* ── Tables ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left}
+td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.col-actions{text-align:right;white-space:nowrap}
+
+/* ── Buttons ── */
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#4a79e4}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text)}
+.btn-outline:hover{background:var(--surface2)}
+.btn-danger{background:transparent;border:1px solid rgba(247,96,96,.3);color:var(--red)}
+.btn-danger:hover{background:var(--rdim)}
+.btn-green{background:var(--green);color:#0a1f15}
+.btn-green:hover{background:#2fc47d}
+.btn-icon{padding:6px 8px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);cursor:pointer;font-size:13px;transition:all .15s}
+.btn-icon:hover{color:var(--text);border-color:var(--border2)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Forms ── */
+.form-grid{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:500;color:var(--muted)}
+input[type=text],input[type=number],input[type=password],select,textarea{
+  background:var(--bg);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text);font-size:13px;padding:8px 11px;outline:none;
+  transition:border-color .15s;width:100%;font-family:inherit;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--surface)}
+textarea{resize:vertical;min-height:80px}
+.hint{font-size:11px;color:var(--muted)}
+.check-row{display:flex;align-items:center;gap:8px}
+input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+.check-row label{font-size:13px;color:var(--text);font-weight:400;cursor:pointer}
+
+/* ── Disk selector ── */
+.disk-selector{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:4px}
+.disk-card{border:1.5px solid var(--border);border-radius:var(--r);padding:13px;cursor:pointer;transition:all .15s;background:var(--bg)}
+.disk-card:hover{border-color:var(--border2);background:var(--surface2)}
+.disk-card.selected{border-color:var(--accent);background:var(--adim)}
+.disk-name{font-size:13px;font-weight:500;margin-bottom:3px}
+.disk-size{font-size:20px;font-weight:700;color:var(--accent);margin:5px 0 2px;letter-spacing:-.5px}
+.disk-dev{font-size:11px;color:var(--muted);font-family:var(--mono)}
+
+/* ── Progress bar ── */
+.progress{height:4px;border-radius:2px;background:var(--surface3);overflow:hidden;margin-top:6px}
+.progress-bar{height:100%;border-radius:2px;background:var(--accent);transition:width .4s}
+.progress-bar.warn{background:var(--amber)}
+.progress-bar.danger{background:var(--red)}
+
+/* ── Share type toggle ── */
+.type-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:4px}
+.type-card{border:1.5px solid var(--border);border-radius:8px;padding:12px 10px;cursor:pointer;transition:all .15s;text-align:center}
+.type-card:hover{border-color:var(--border2)}
+.type-card.selected{border-color:var(--accent);background:var(--adim)}
+.type-card .type-icon{font-size:22px;margin-bottom:4px}
+.type-card .type-name{font-size:12px;font-weight:500}
+.type-card .type-desc{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── Code blocks ── */
+.code-header{display:flex;align-items:center;justify-content:space-between;background:#0f1118;border:1px solid var(--border);border-bottom:none;border-radius:var(--r) var(--r) 0 0;padding:9px 14px}
+.code-lang{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.btn-copy{background:var(--surface2);border:1px solid var(--border2);color:var(--muted);font-size:11px;padding:3px 9px;border-radius:5px;cursor:pointer;transition:all .15s}
+.btn-copy:hover{color:var(--text)}
+pre{background:#0f1118;border:1px solid var(--border);border-radius:0 0 var(--r) var(--r);padding:14px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.7;color:#b8c4e0;max-height:380px;overflow-y:auto}
+
+/* ── Tabs ── */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.tab-btn{padding:9px 16px;font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;font-family:inherit}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ── Modal ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-backdrop.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;padding:24px;width:520px;max-width:90vw;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px}
+.modal-close:hover{color:var(--text)}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* ── Log terminal ── */
+.log-box{background:#080a0f;border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:12px;color:#5fff8a;min-height:100px;max-height:280px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;display:none}
+.log-box.visible{display:block}
+
+/* ── Network cards ── */
+.iface-card{background:var(--surface2);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.iface-name{font-family:var(--mono);font-size:13px;font-weight:600;min-width:80px}
+.iface-ips{display:flex;flex-wrap:wrap;gap:6px}
+.ip-chip{font-family:var(--mono);font-size:12px;background:var(--adim);color:var(--accent);border-radius:4px;padding:2px 8px}
+
+/* ── Service card ── */
+.svc-card{background:var(--surface2);border-radius:8px;padding:14px 16px;margin-bottom:10px}
+.svc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.svc-name-big{font-size:14px;font-weight:600}
+.svc-desc{font-size:12px;color:var(--muted);margin-top:2px}
+.svc-btns{display:flex;gap:6px;margin-top:10px}
+
+/* ── Alert ── */
+.alert{border-radius:8px;padding:11px 14px;font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px}
+.alert-amber{background:var(--adim2);border:1px solid rgba(245,160,32,.2);color:#c07810}
+.alert-green{background:var(--gdim);border:1px solid rgba(63,214,142,.2);color:#1e9660}
+.alert-red  {background:var(--rdim);border:1px solid rgba(247,96,96,.2);color:#c04040}
+
+/* ── Empty state ── */
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty .empty-icon{font-size:36px;margin-bottom:10px;opacity:.5}
+.empty p{font-size:13px}
+
+/* ── Toast ── */
+#toast{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px}
+.toast-item{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;min-width:240px;box-shadow:0 4px 20px rgba(0,0,0,.4);animation:slideIn .2s ease}
+.toast-item.ok  {border-left:3px solid var(--green)}
+.toast-item.err {border-left:3px solid var(--red)}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:768px){
+  aside{display:none}
+  .main-wrap{margin-left:0}
+  .content{padding:16px}
+  .form-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════════ -->
+<aside>
+  <div class="brand">
+    <div class="brand-logo">🪺</div>
+    <div class="brand-text">
+      <h1>NestShare</h1>
+      <p>{{ hostname }}</p>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-section">Visão geral</div>
+    <button class="nav-item active" onclick="showPage('dashboard')">
+      <span class="ni">🏠</span> Dashboard
+    </button>
+
+    <div class="nav-section">Rede</div>
+    <button class="nav-item" onclick="showPage('shares')">
+      <span class="ni">🗂</span> Compartilhamentos
+      <span class="nav-badge" id="nb-shares">{{ all_shares|length }}</span>
+    </button>
+    <button class="nav-item" onclick="showPage('users')">
+      <span class="ni">👤</span> Usuários
+      <span class="nav-badge" id="nb-users">{{ samba_users|length }}</span>
+    </button>
+    <button class="nav-item" onclick="showPage('network')">
+      <span class="ni">🌐</span> Rede
+    </button>
+
+    <div class="nav-section">Sistema</div>
+    <button class="nav-item" onclick="showPage('disks')">
+      <span class="ni">💾</span> Discos
+    </button>
+    <button class="nav-item" onclick="showPage('services')">
+      <span class="ni">⚙️</span> Serviços
+    </button>
+    <button class="nav-item" onclick="showPage('setup')">
+      <span class="ni">🚀</span> Setup / Script
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    {% for name, svc in all_services.items() %}
+    <div class="svc-row">
+      <span class="svc-label">{{ svc.label }}</span>
+      <span class="dot {{ 'dot-green' if svc.active else 'dot-red' }}" title="{{ 'active' if svc.active else 'inactive' }}"></span>
+    </div>
+    {% endfor %}
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════════════════ -->
+<div class="main-wrap">
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="page-title" id="top-title">Dashboard</span>
+      <span class="page-sub" id="top-sub">visão geral do sistema</span>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:var(--muted);margin-right:4px">{{ current_user }}</span>
+      <a href="/logout" class="btn btn-outline btn-sm" style="text-decoration:none">Sair</a>
+      <button class="btn btn-outline btn-sm" onclick="refreshStatus()">↻ Atualizar</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+  <!-- ══ DASHBOARD ══════════════════════════════════════════════════════════ -->
+  <div class="page active" id="page-dashboard">
+
+    {% if not samba_ok or not avahi_ok %}
+    <div class="alert alert-amber">
+      ⚠️ <span>Dependências faltando:
+      {% if not samba_ok %}<strong>samba</strong> {% endif %}
+      {% if not avahi_ok %}<strong>avahi-daemon</strong> {% endif %}
+      — vá em <strong>Setup / Script</strong> para instalar.</span>
+    </div>
+    {% endif %}
+
+    <!-- Metrics -->
+    <div class="card-grid" style="margin-bottom:18px">
+      <div class="metric metric-accent">
+        <div class="metric-label">Compartilhamentos</div>
+        <div class="metric-value" id="m-shares">{{ all_shares|length }}</div>
+        <div class="metric-sub">ativos via SMB</div>
+      </div>
+      <div class="metric metric-green">
+        <div class="metric-label">Usuários Samba</div>
+        <div class="metric-value" id="m-users">{{ samba_users|length }}</div>
+        <div class="metric-sub">contas configuradas</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">IP Principal</div>
+        <div class="metric-value" style="font-size:16px;font-family:var(--mono);color:var(--green)" id="m-ip">{{ primary_ip }}</div>
+        <div class="metric-sub">endereço na rede local</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Hostname</div>
+        <div class="metric-value" style="font-size:16px;font-family:var(--mono)" id="m-hostname">{{ hostname }}</div>
+        <div class="metric-sub">nome na rede</div>
+      </div>
+    </div>
+
+    <!-- Shares quick view -->
+    <div class="card">
+      <div class="card-title">Compartilhamentos ativos</div>
+      {% if all_shares %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Caminho</th><th>Usuários</th><th>Tipo</th></tr></thead>
+          <tbody>
+          {% for s in all_shares %}
+          <tr>
+            <td><strong>{{ s.name }}</strong></td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">{{ s.path }}</td>
+            <td style="font-size:12px">{{ s.valid_users or '—' }}</td>
+            <td>
+              {% if s.time_machine %}
+              <span class="badge badge-purple">🍎 Time Machine</span>
+              {% else %}
+              <span class="badge badge-blue">🗂 Geral</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-icon">🗂</div><p>Nenhum compartilhamento ainda.<br><button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="showPage('shares')">Criar compartilhamento</button></p></div>
+      {% endif %}
+    </div>
+
+    <!-- Services quick status -->
+    <div class="card">
+      <div class="card-title">Status dos serviços</div>
+      <div style="display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr))">
+        {% for name, svc in all_services.items() %}
+        <div class="metric">
+          <div class="metric-label">{{ svc.icon }} {{ svc.label }}</div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+            <span class="dot {{ 'dot-green' if svc.active else 'dot-red' }}"></span>
+            <span style="font-size:13px">{{ 'Ativo' if svc.active else 'Inativo' }}</span>
+            {% if not svc.active %}
+            <button class="btn btn-sm btn-green" onclick="svcAction('{{ name }}','start')">Iniciar</button>
+            {% endif %}
+          </div>
+          <div class="metric-sub">{{ svc.desc }}</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Mac connect box -->
+    <div class="card" style="border-color:rgba(160,108,245,.2)">
+      <div class="card-title">💻 Conectar no Mac</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        {% for iface in ifaces %}{% for ip in iface.ips %}
+        <div style="background:var(--surface2);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:13px;color:var(--purple)">
+          smb://{{ ip }}/
+        </div>
+        {% endfor %}{% endfor %}
+        <span style="font-size:12px;color:var(--muted)">Finder → ⌘K → endereço acima</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SHARES ══════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-shares">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div></div>
+      <button class="btn btn-primary" onclick="openModal('modal-add-share')">+ Novo compartilhamento</button>
+    </div>
+
+    <div class="card" id="shares-card">
+      <div class="card-title">Compartilhamentos SMB</div>
+      <div id="shares-table-wrap">
+      {% if all_shares %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Caminho</th><th>Usuários</th><th>Gravável</th><th>Tipo</th><th class="col-actions">Ações</th></tr></thead>
+          <tbody>
+          {% for s in all_shares %}
+          <tr id="share-row-{{ s.name }}">
+            <td><strong>{{ s.name }}</strong></td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">{{ s.path }}</td>
+            <td style="font-size:12px">{{ s.valid_users or '—' }}</td>
+            <td>{{ '✓' if s.writeable == 'yes' else '—' }}</td>
+            <td>
+              {% if s.time_machine %}<span class="badge badge-purple">🍎 Time Machine</span>
+              {% else %}<span class="badge badge-blue">🗂 Geral</span>{% endif %}
+            </td>
+            <td class="col-actions">
+              <button class="btn-icon" onclick="deleteShare('{{ s.name }}')" title="Remover">🗑</button>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-icon">🗂</div><p>Nenhum compartilhamento configurado.</p></div>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ USERS ══════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-users">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div></div>
+      <button class="btn btn-primary" onclick="openModal('modal-add-user')">+ Novo usuário</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Usuários Samba</div>
+      <div id="users-table-wrap">
+      {% if samba_users %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Usuário</th><th>UID</th><th class="col-actions">Ações</th></tr></thead>
+          <tbody>
+          {% for u in samba_users %}
+          <tr id="user-row-{{ u.name }}">
+            <td><strong>{{ u.name }}</strong></td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">{{ u.uid }}</td>
+            <td class="col-actions">
+              <button class="btn btn-sm btn-outline" onclick="openPassModal('{{ u.name }}')">🔑 Senha</button>
+              <button class="btn-icon" onclick="deleteUser('{{ u.name }}')" title="Remover" style="margin-left:4px">🗑</button>
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-icon">👤</div><p>Nenhum usuário Samba configurado.</p></div>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ NETWORK ════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-network">
+    <div class="card">
+      <div class="card-title">Interfaces de rede</div>
+      {% for iface in ifaces %}
+      <div class="iface-card">
+        <span class="dot {{ 'dot-green' if iface.state == 'up' else 'dot-amber' }}"></span>
+        <span class="iface-name">{{ iface.name }}</span>
+        <div class="iface-ips">
+          {% for ip in iface.ips %}
+          <span class="ip-chip">{{ ip }}</span>
+          {% endfor %}
+          {% if not iface.ips %}<span style="font-size:12px;color:var(--muted)">sem IP</span>{% endif %}
+        </div>
+        <span class="badge {{ 'badge-green' if iface.state == 'up' else 'badge-amber' }}" style="margin-left:auto">{{ iface.state }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="card">
+      <div class="card-title">Endereços SMB</div>
+      {% for iface in ifaces %}{% for ip in iface.ips %}
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <span style="font-family:var(--mono);font-size:13px;color:var(--accent)">smb://{{ ip }}/</span>
+        <button class="btn-copy btn-sm" onclick="copyText('smb://{{ ip }}/')">Copiar</button>
+      </div>
+      {% endfor %}{% endfor %}
+    </div>
+  </div>
+
+  <!-- ══ DISKS ══════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-disks">
+    <div class="card">
+      <div class="card-title">Discos e volumes</div>
+      {% if all_disks %}
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dispositivo</th><th>Label</th><th>Tamanho</th><th>FS</th><th>Ponto de montagem</th><th class="col-actions">Ações</th></tr></thead>
+          <tbody>
+          {% for d in all_disks %}
+          <tr>
+            <td style="font-family:var(--mono);font-size:12px">{{ d.device }}</td>
+            <td>{{ d.label }}</td>
+            <td><strong>{{ d.size }}</strong></td>
+            <td><span class="badge badge-blue">{{ d.fstype }}</span></td>
+            <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">
+              {{ d.mountpoint or '—' }}
+            </td>
+            <td class="col-actions">
+              {% if d.mountpoint %}
+              <button class="btn btn-sm btn-outline" onclick="umountDisk('{{ d.mountpoint }}')">↑ Desmontar</button>
+              {% else %}
+              <button class="btn btn-sm btn-outline" onclick="openMountModal('{{ d.device }}')">↓ Montar</button>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty"><div class="empty-icon">💾</div><p>Nenhum disco detectado.</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ══ SERVICES ══════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-services">
+    {% for name, svc in all_services.items() %}
+    <div class="svc-card" id="svc-card-{{ name }}">
+      <div class="svc-top">
+        <div>
+          <div class="svc-name-big">{{ svc.icon }} {{ svc.label }}</div>
+          <div class="svc-desc">{{ svc.desc }}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="badge {{ 'badge-green' if svc.active else 'badge-red' }}" id="svc-status-{{ name }}">
+            {{ 'ativo' if svc.active else 'inativo' }}
+          </span>
+          <span class="badge {{ 'badge-green' if svc.enabled else 'badge-amber' }}">
+            {{ 'habilitado' if svc.enabled else 'desabilitado' }}
+          </span>
+        </div>
+      </div>
+      <div class="svc-btns">
+        <button class="btn btn-sm btn-green"   onclick="svcAction('{{ name }}','start')">▶ Iniciar</button>
+        <button class="btn btn-sm btn-outline"  onclick="svcAction('{{ name }}','stop')">■ Parar</button>
+        <button class="btn btn-sm btn-outline"  onclick="svcAction('{{ name }}','restart')">↺ Reiniciar</button>
+        <button class="btn btn-sm btn-outline"  onclick="showLogs('{{ name }}')">📋 Logs</button>
+      </div>
+      <div class="log-box" id="log-{{ name }}"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- ══ SETUP ══════════════════════════════════════════════════════════════ -->
+  <div class="page" id="page-setup">
+
+    {% if not samba_ok or not avahi_ok %}
+    <div class="alert alert-amber">
+      ⚠️ Instale as dependências no servidor antes de aplicar: <strong>sudo apt-get install samba avahi-daemon</strong>
+    </div>
+    {% endif %}
+
+    <div class="card">
+      <div class="card-title">Configurações globais</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Workgroup</label>
+          <input type="text" id="setup-workgroup" value="WORKGROUP"/>
+          <p class="hint">Padrão: WORKGROUP (compatível com Windows e Mac)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick share builder for setup -->
+    <div class="card">
+      <div class="card-title">Compartilhamentos a configurar</div>
+      <div id="setup-shares-list">
+        <div class="empty"><div class="empty-icon">🗂</div><p>Adicione compartilhamentos acima e eles aparecerão aqui para incluir no script.</p></div>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-outline" onclick="loadSharesIntoSetup()">↻ Carregar compartilhamentos atuais</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+      <button class="btn btn-primary" onclick="generateScript()">⚡ Gerar script</button>
+      <button class="btn btn-outline" id="btn-dl-script" onclick="downloadScript()" disabled>⬇ Baixar .sh</button>
+    </div>
+
+    <div id="script-output" style="display:none">
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('smb')">smb.conf</button>
+        <button class="tab-btn" onclick="switchTab('script')">setup.sh</button>
+      </div>
+      <div class="tab-pane active" id="tab-smb">
+        <div class="code-header"><span class="code-lang">INI · smb.conf</span><button class="btn-copy" onclick="copyEl('pre-smb')">Copiar</button></div>
+        <pre id="pre-smb"></pre>
+      </div>
+      <div class="tab-pane" id="tab-script">
+        <div class="code-header"><span class="code-lang">Bash · setup_nestsshare.sh</span><button class="btn-copy" onclick="copyEl('pre-script')">Copiar</button></div>
+        <pre id="pre-script"></pre>
+      </div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main-wrap -->
+
+<!-- ══ MODALS ══════════════════════════════════════════════════════════════ -->
+
+<!-- Add Share -->
+<div class="modal-backdrop" id="modal-add-share">
+  <div class="modal">
+    <div class="modal-title">Novo compartilhamento <button class="modal-close" onclick="closeModal('modal-add-share')">✕</button></div>
+
+    <div class="card-title">Tipo</div>
+    <div class="type-grid" style="margin-bottom:16px">
+      <div class="type-card selected" id="type-general" onclick="selectType('general')">
+        <div class="type-icon">🗂</div>
+        <div class="type-name">Geral</div>
+        <div class="type-desc">Windows, Mac, Linux</div>
+      </div>
+      <div class="type-card" id="type-timemachine" onclick="selectType('timemachine')">
+        <div class="type-icon">🍎</div>
+        <div class="type-name">Time Machine</div>
+        <div class="type-desc">Backup macOS</div>
+      </div>
+      <div class="type-card" id="type-readonly" onclick="selectType('readonly')">
+        <div class="type-icon">📁</div>
+        <div class="type-name">Somente leitura</div>
+        <div class="type-desc">Mídia / arquivos</div>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome do compartilhamento</label>
+        <input type="text" id="ns-name" placeholder="MeuShare"/>
+      </div>
+      <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" id="ns-comment" placeholder="Descrição opcional"/>
+      </div>
+      <div class="form-group full">
+        <label>Caminho no servidor</label>
+        <input type="text" id="ns-path" placeholder="/mnt/disco"/>
+      </div>
+      <div class="form-group">
+        <label>Usuários válidos</label>
+        <input type="text" id="ns-users" placeholder="usuario1 usuario2"/>
+        <p class="hint">Separados por espaço. Deixe vazio para todos.</p>
+      </div>
+      <div class="form-group" id="tm-size-group" style="display:none">
+        <label>Limite (GB)</label>
+        <input type="number" id="ns-maxsize" value="0" min="0"/>
+        <p class="hint">0 = sem limite</p>
+      </div>
+
+      <div class="form-group full">
+        <label>Disco a montar (opcional)</label>
+        <div class="disk-selector" id="modal-disk-grid">
+          {% for d in all_disks %}
+          <div class="disk-card" onclick="selectModalDisk('{{ d.device }}', '{{ d.label }}', '{{ d.mountpoint }}', this)">
+            <div class="disk-name">{{ d.label }}</div>
+            <div class="disk-size">{{ d.size }}</div>
+            <div class="disk-dev">{{ d.device }}</div>
+            <div class="disk-dev">{{ d.fstype }}</div>
+            {% if d.mountpoint %}<div class="disk-dev" style="color:var(--green)">↑ {{ d.mountpoint }}</div>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group full">
+        <div class="check-row">
+          <input type="checkbox" id="ns-browseable" checked/>
+          <label for="ns-browseable">Visível na rede (browseable)</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-share')">Cancelar</button>
+      <button class="btn btn-primary" onclick="addShare()">Criar share</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add User -->
+<div class="modal-backdrop" id="modal-add-user">
+  <div class="modal">
+    <div class="modal-title">Novo usuário Samba <button class="modal-close" onclick="closeModal('modal-add-user')">✕</button></div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Nome de usuário</label>
+        <input type="text" id="nu-name" placeholder="milani"/>
+      </div>
+      <div class="form-group">
+        <label>Senha</label>
+        <input type="password" id="nu-pass" placeholder="••••••••"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-add-user')">Cancelar</button>
+      <button class="btn btn-primary" onclick="addUser()">Criar usuário</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Password -->
+<div class="modal-backdrop" id="modal-pass">
+  <div class="modal">
+    <div class="modal-title">Alterar senha <span id="pass-username"></span> <button class="modal-close" onclick="closeModal('modal-pass')">✕</button></div>
+    <input type="hidden" id="pass-target-user"/>
+    <div class="form-group">
+      <label>Nova senha</label>
+      <input type="password" id="new-pass" placeholder="••••••••"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-pass')">Cancelar</button>
+      <button class="btn btn-primary" onclick="changePass()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Mount Modal -->
+<div class="modal-backdrop" id="modal-mount">
+  <div class="modal">
+    <div class="modal-title">Montar disco <button class="modal-close" onclick="closeModal('modal-mount')">✕</button></div>
+    <input type="hidden" id="mount-device"/>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Dispositivo</label>
+        <input type="text" id="mount-device-show" readonly style="opacity:.6"/>
+      </div>
+      <div class="form-group">
+        <label>Ponto de montagem</label>
+        <input type="text" id="mount-point" placeholder="/mnt/disco"/>
+      </div>
+      <div class="form-group">
+        <label>Sistema de arquivos</label>
+        <select id="mount-fs">
+          <option value="auto">auto</option>
+          <option value="ext4">ext4</option>
+          <option value="exfat">exFAT</option>
+          <option value="ntfs">NTFS</option>
+          <option value="vfat">FAT32</option>
+          <option value="hfsplus">HFS+</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="check-row" style="margin-top:20px">
+          <input type="checkbox" id="mount-fstab" checked/>
+          <label for="mount-fstab">Adicionar ao fstab (manter no boot)</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('modal-mount')">Cancelar</button>
+      <button class="btn btn-primary" onclick="mountDisk()">Montar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let currentType   = 'general';
+let selectedModalDisk = null;
+let setupShares   = [];
+let generatedScript = null;
+let generatedConf   = null;
+
+// ── Navigation ─────────────────────────────────────────────────────────────
+const pageTitles = {
+  dashboard: ['Dashboard','visão geral do sistema'],
+  shares:    ['Compartilhamentos','gerenciar shares SMB'],
+  users:     ['Usuários','contas Samba'],
+  network:   ['Rede','interfaces e endereços'],
+  disks:     ['Discos','volumes conectados'],
+  services:  ['Serviços','status e controle'],
+  setup:     ['Setup / Script','configuração e instalação'],
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const items = document.querySelectorAll('.nav-item');
+  items.forEach(n => { if (n.getAttribute('onclick')?.includes("'"+id+"'")) n.classList.add('active'); });
+  const [title, sub] = pageTitles[id] || [id,''];
+  document.getElementById('top-title').textContent = title;
+  document.getElementById('top-sub').textContent   = sub;
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, ok=true) {
+  const t = document.createElement('div');
+  t.className = 'toast-item ' + (ok ? 'ok' : 'err');
+  t.textContent = msg;
+  document.getElementById('toast').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ── Share type ─────────────────────────────────────────────────────────────
+function selectType(type) {
+  currentType = type;
+  ['general','timemachine','readonly'].forEach(t => {
+    document.getElementById('type-'+t).classList.toggle('selected', t === type);
+  });
+  document.getElementById('tm-size-group').style.display = type === 'timemachine' ? 'flex' : 'none';
+  if (type === 'timemachine') {
+    const name = document.getElementById('ns-name');
+    if (!name.value) name.value = 'TimeMachine';
+    const path = document.getElementById('ns-path');
+    if (!path.value) path.value = '/mnt/timemachine';
+  }
+}
+
+function selectModalDisk(device, label, mountpoint, el) {
+  document.querySelectorAll('#modal-disk-grid .disk-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedModalDisk = { device, mountpoint };
+  const pathInput = document.getElementById('ns-path');
+  if (!pathInput.value && !mountpoint) {
+    const slug = label.replace(/[^a-z0-9]/gi,'').toLowerCase() || 'disco';
+    pathInput.value = '/mnt/' + slug;
+  } else if (mountpoint) {
+    pathInput.value = mountpoint;
+  }
+}
+
+// ── Shares ─────────────────────────────────────────────────────────────────
+async function addShare() {
+  const name    = document.getElementById('ns-name').value.trim();
+  const path    = document.getElementById('ns-path').value.trim();
+  const comment = document.getElementById('ns-comment').value.trim();
+  const validUsers = document.getElementById('ns-users').value.trim();
+  const maxSize = parseInt(document.getElementById('ns-maxsize')?.value) || 0;
+  const browseable = document.getElementById('ns-browseable').checked;
+
+  if (!name || !path) { toast('Nome e caminho são obrigatórios.', false); return; }
+
+  const cfg = {
+    name, path, comment,
+    valid_users: validUsers,
+    writeable:   currentType !== 'readonly',
+    browseable,
+    time_machine: currentType === 'timemachine',
+    max_size_gb:  maxSize,
+    readonly:     currentType === 'readonly',
+    workgroup:    'WORKGROUP',
+  };
+
+  // Mount disk first if selected and not yet mounted
+  if (selectedModalDisk?.device && !selectedModalDisk.mountpoint) {
+    const r = await fetch('/api/disks/mount', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ device: selectedModalDisk.device, mountpoint: path })
+    }).then(r => r.json());
+    if (!r.ok) { toast('Falha ao montar: ' + r.error, false); return; }
+  }
+
+  const res = await fetch('/api/shares', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(cfg)
+  }).then(r => r.json());
+
+  if (res.ok) {
+    toast('Compartilhamento criado!');
+    closeModal('modal-add-share');
+    location.reload();
+  } else {
+    toast((res.errors || [res.error]).join(', '), false);
+  }
+}
+
+async function deleteShare(name) {
+  if (!confirm(`Remover compartilhamento "${name}"?`)) return;
+  const res = await fetch('/api/shares/'+name, { method:'DELETE' }).then(r=>r.json());
+  if (res.ok) { toast('Share removido.'); document.getElementById('share-row-'+name)?.remove(); }
+  else toast('Erro: ' + res.error, false);
+}
+
+// ── Users ──────────────────────────────────────────────────────────────────
+async function addUser() {
+  const name = document.getElementById('nu-name').value.trim();
+  const pass = document.getElementById('nu-pass').value;
+  if (!name) { toast('Nome obrigatório.', false); return; }
+  const res = await fetch('/api/users', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ name, password: pass })
+  }).then(r=>r.json());
+  if (res.ok) { toast('Usuário criado!'); closeModal('modal-add-user'); location.reload(); }
+  else toast('Erro: ' + res.error, false);
+}
+
+function openPassModal(username) {
+  document.getElementById('pass-target-user').value = username;
+  document.getElementById('pass-username').textContent = username;
+  document.getElementById('new-pass').value = '';
+  openModal('modal-pass');
+}
+
+async function changePass() {
+  const user = document.getElementById('pass-target-user').value;
+  const pass = document.getElementById('new-pass').value;
+  const res = await fetch(`/api/users/${user}/password`, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ password: pass })
+  }).then(r=>r.json());
+  if (res.ok) { toast('Senha alterada!'); closeModal('modal-pass'); }
+  else toast('Erro: ' + res.error, false);
+}
+
+async function deleteUser(name) {
+  if (!confirm(`Remover usuário "${name}"?`)) return;
+  const res = await fetch('/api/users/'+name, { method:'DELETE' }).then(r=>r.json());
+  if (res.ok) { toast('Usuário removido.'); document.getElementById('user-row-'+name)?.remove(); }
+  else toast('Erro: ' + res.error, false);
+}
+
+// ── Services ───────────────────────────────────────────────────────────────
+async function svcAction(name, action) {
+  const res = await fetch(`/api/services/${name}/${action}`, { method:'POST' }).then(r=>r.json());
+  if (res.ok) {
+    toast(`${name}: ${action} OK`);
+    const badge = document.getElementById('svc-status-'+name);
+    if (badge) {
+      const active = action === 'start' || action === 'restart';
+      badge.textContent = active ? 'ativo' : 'inativo';
+      badge.className = 'badge ' + (active ? 'badge-green' : 'badge-red');
+    }
+  } else {
+    toast(`Erro em ${action}: ${res.error}`, false);
+  }
+}
+
+async function showLogs(name) {
+  const box = document.getElementById('log-'+name);
+  if (box.classList.contains('visible')) { box.classList.remove('visible'); return; }
+  box.textContent = 'Carregando...';
+  box.classList.add('visible');
+  const res = await fetch(`/api/services/${name}/logs?lines=60`).then(r=>r.json());
+  box.textContent = res.log || '(sem logs)';
+  box.scrollTop = box.scrollHeight;
+}
+
+// ── Disks ──────────────────────────────────────────────────────────────────
+function openMountModal(device) {
+  document.getElementById('mount-device').value = device;
+  document.getElementById('mount-device-show').value = device;
+  document.getElementById('mount-point').value = '/mnt/' + device.split('/').pop();
+  openModal('modal-mount');
+}
+
+async function mountDisk() {
+  const device     = document.getElementById('mount-device').value;
+  const mountpoint = document.getElementById('mount-point').value.trim();
+  const fstype     = document.getElementById('mount-fs').value;
+  const addFstab   = document.getElementById('mount-fstab').checked;
+  if (!mountpoint) { toast('Ponto de montagem obrigatório.', false); return; }
+
+  const r = await fetch('/api/disks/mount', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ device, mountpoint, fstype })
+  }).then(r=>r.json());
+
+  if (!r.ok) { toast('Erro ao montar: ' + r.error, false); return; }
+
+  if (addFstab) {
+    await fetch('/api/disks/fstab', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ device, mountpoint, fstype })
+    });
+  }
+  toast('Disco montado em ' + mountpoint);
+  closeModal('modal-mount');
+  location.reload();
+}
+
+async function umountDisk(mountpoint) {
+  if (!confirm(`Desmontar ${mountpoint}?`)) return;
+  const r = await fetch('/api/disks/umount', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ mountpoint })
+  }).then(r=>r.json());
+  if (r.ok) { toast('Desmontado.'); location.reload(); }
+  else toast('Erro: ' + r.error, false);
+}
+
+// ── Setup ──────────────────────────────────────────────────────────────────
+async function loadSharesIntoSetup() {
+  const res = await fetch('/api/shares').then(r=>r.json());
+  setupShares = res.shares || [];
+  const el = document.getElementById('setup-shares-list');
+  if (!setupShares.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🗂</div><p>Nenhum share para incluir.</p></div>';
+    return;
+  }
+  el.innerHTML = setupShares.map(s =>
+    `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="badge ${s.time_machine?'badge-purple':'badge-blue'}">${s.time_machine?'🍎':'🗂'}</span>
+      <strong>${s.name}</strong>
+      <span style="font-family:var(--mono);font-size:12px;color:var(--muted)">${s.path}</span>
+    </div>`
+  ).join('');
+  toast('Shares carregados.');
+}
+
+async function generateScript() {
+  if (!setupShares.length) await loadSharesIntoSetup();
+  const workgroup = document.getElementById('setup-workgroup').value;
+  const users = [];
+
+  const [confRes, scriptRes] = await Promise.all([
+    fetch('/api/shares/preview', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ shares: setupShares, workgroup })
+    }).then(r=>r.json()),
+    fetch('/api/shares/script', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ shares: setupShares, users, workgroup })
+    }).then(r=>r.json()),
+  ]);
+
+  generatedConf   = confRes.conf;
+  generatedScript = scriptRes.script;
+
+  document.getElementById('pre-smb').textContent    = generatedConf;
+  document.getElementById('pre-script').textContent = generatedScript;
+  document.getElementById('script-output').style.display = 'block';
+  document.getElementById('btn-dl-script').disabled = false;
+  document.getElementById('script-output').scrollIntoView({ behavior:'smooth' });
+  toast('Script gerado!');
+}
+
+async function downloadScript() {
+  if (!generatedScript) return;
+  const workgroup = document.getElementById('setup-workgroup').value;
+  const res = await fetch('/api/shares/download_script', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ shares: setupShares, users:[], workgroup })
+  });
+  const blob = await res.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'setup_nestsshare.sh';
+  a.click();
+}
+
+function switchTab(tab) {
+  ['smb','script'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+  });
+  document.querySelectorAll('#page-setup .tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0&&tab==='smb')||(i===1&&tab==='script'));
+  });
+}
+
+// ── Utils ──────────────────────────────────────────────────────────────────
+function copyEl(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => toast('Copiado!'));
+}
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copiado!'));
+}
+
+async function refreshStatus() {
+  const res = await fetch('/api/status').then(r=>r.json());
+  document.getElementById('m-shares').textContent   = res.shares.length;
+  document.getElementById('m-users').textContent    = res.users.length;
+  document.getElementById('m-ip').textContent       = res.ifaces.find(i=>i.ips.length)?.ips[0] || '—';
+  document.getElementById('nb-shares').textContent  = res.shares.length;
+  document.getElementById('nb-users').textContent   = res.users.length;
+  toast('Status atualizado.');
+}
+
+// Close modals on backdrop click
+document.querySelectorAll('.modal-backdrop').forEach(bd => {
+  bd.addEventListener('click', e => { if (e.target === bd) bd.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

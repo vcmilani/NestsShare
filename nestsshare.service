@@ -1,0 +1,14 @@
+[Unit]
+Description=NestShare Dashboard
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/nestsshare
+ExecStart=/opt/nestsshare/venv/bin/python app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
