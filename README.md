@@ -42,8 +42,8 @@ scp -r nestshare/ usuario@<IP>:~/
 cd nestshare
 sudo bash install.sh
 
-# Acessar
-http://<IP>:5000
+# Acessar (aceite o aviso de certificado auto-assinado no browser)
+https://<IP>:5000
 ```
 
 ## Uso manual
@@ -65,10 +65,13 @@ nestshare/
 │   ├── services.py         # Controle de serviços systemd
 │   └── shares.py           # SMB shares, smb.conf, scripts
 ├── templates/
-│   └── index.html          # Dashboard completo
+│   ├── index.html          # Dashboard completo
+│   └── login.html          # Tela de login
 ├── requirements.txt
-├── nestshare.service      # Systemd unit
-└── install.sh
+├── nestshare.service       # Systemd unit
+├── install.sh              # Instalação (gera certificado SSL)
+├── uninstall.sh            # Remoção completa
+└── release.sh              # Gera ZIP para distribuição
 ```
 
 ## API REST
