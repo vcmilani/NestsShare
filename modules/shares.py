@@ -1,7 +1,8 @@
 """NestShare — SMB Shares module"""
 import subprocess, os, re, configparser, io
 
-SMB_CONF = "/etc/samba/smb.conf"
+SMB_CONF     = "/etc/samba/smb.conf"
+AVAHI_SERVICE = "/etc/avahi/services/samba.service"
 
 def _run(cmd):
     r = subprocess.run(cmd, shell=True, capture_output=True, text=True)
@@ -115,16 +116,56 @@ def validate_smb_conf():
     out, err, rc = _run("testparm -s 2>&1")
     return rc == 0, (out + err).strip()
 
+def _build_avahi_xml(tm_shares):
+    dk_records = "\n".join(
+        f'    <txt-record>dk{i}=adVN={s["name"]},adVF=0x82</txt-record>'
+        for i, s in enumerate(tm_shares)
+    )
+    return f"""<?xml version="1.0" standalone='no'?>
+<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
+<service-group>
+  <name replace-wildcards="yes">%h</name>
+  <service>
+    <type>_smb._tcp</type>
+    <port>445</port>
+  </service>
+  <service>
+    <type>_adisk._tcp</type>
+    <port>9</port>
+    <txt-record>sys=waMa=0,adVF=0x100</txt-record>
+{dk_records}
+  </service>
+</service-group>
+"""
+
+def sync_avahi(shares=None):
+    """Sync the Avahi _adisk._tcp service file with the current Time Machine shares."""
+    if shares is None:
+        shares = parse_shares()
+    _update_avahi(shares)
+
+def _update_avahi(shares):
+    tm_shares = [s for s in shares if s.get("time_machine")]
+    if not tm_shares:
+        if os.path.exists(AVAHI_SERVICE):
+            os.remove(AVAHI_SERVICE)
+            _run("systemctl restart avahi-daemon 2>/dev/null || true")
+        return
+    os.makedirs(os.path.dirname(AVAHI_SERVICE), exist_ok=True)
+    with open(AVAHI_SERVICE, "w") as f:
+        f.write(_build_avahi_xml(tm_shares))
+    _run("systemctl restart avahi-daemon 2>/dev/null || true")
+
 def add_share(share_cfg, workgroup="WORKGROUP"):
     """Add a new share to smb.conf."""
     existing = parse_shares()
-    # Remove if name already exists (update)
     existing = [s for s in existing if s["name"] != share_cfg["name"]]
     existing.append(share_cfg)
     conf = build_smb_conf(existing, workgroup)
     ok, err = write_smb_conf(conf)
     if ok:
         _run("systemctl reload smbd 2>/dev/null || systemctl restart smbd 2>/dev/null")
+        _update_avahi(existing)
     return ok, err
 
 def remove_share(name, workgroup="WORKGROUP"):
@@ -133,6 +174,7 @@ def remove_share(name, workgroup="WORKGROUP"):
     ok, err = write_smb_conf(conf)
     if ok:
         _run("systemctl reload smbd 2>/dev/null || systemctl restart smbd 2>/dev/null")
+        _update_avahi(existing)
     return ok, err
 
 # ── Setup script generator ─────────────────────────────────────────────────────
@@ -163,27 +205,7 @@ warn "Usuário '{uname}' criado sem senha — defina com: sudo smbpasswd -a {una
     tm_shares = [s for s in shares if s.get("time_machine")]
     avahi_cmd = ""
     if tm_shares:
-        dk_records = "\n".join(
-            f'    <txt-record>dk{i}=adVN={s["name"]},adVF=0x82</txt-record>'
-            for i, s in enumerate(tm_shares)
-        )
-        avahi_xml = f"""<?xml version="1.0" standalone='no'?>
-<!DOCTYPE service-group SYSTEM "avahi-service.dtd">
-<service-group>
-  <name replace-wildcards="yes">%h</name>
-  <service>
-    <type>_smb._tcp</type>
-    <port>445</port>
-  </service>
-  <service>
-    <type>_adisk._tcp</type>
-    <port>9</port>
-    <txt-record>sys=waMa=0,adVF=0x100</txt-record>
-{dk_records}
-  </service>
-</service-group>
-"""
-        avahi_xml_esc = avahi_xml.replace("'", "'\\''")
+        avahi_xml_esc = _build_avahi_xml(tm_shares).replace("'", "'\\''")
         avahi_cmd = f"""
 info "Configurando anúncio Bonjour para Time Machine (_adisk._tcp)..."
 mkdir -p /etc/avahi/services

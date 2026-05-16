@@ -240,6 +240,7 @@ def api_users_disable(name):
     return jsonify({"ok": ok, "error": err})
 
 if __name__ == "__main__":
+    shares.sync_avahi()
     _base = os.path.dirname(os.path.abspath(__file__))
     _cert, _key = os.path.join(_base, "cert.pem"), os.path.join(_base, "key.pem")
     ssl_context = (_cert, _key) if os.path.exists(_cert) and os.path.exists(_key) else None
