@@ -90,6 +90,9 @@ def _share_block(cfg):
         block += f"   fruit:time machine = yes\n"
         if max_size_gb:
             block += f"   fruit:time machine max size = {max_size_gb}G\n"
+        if valid_users:
+            first_user = re.split(r"[,\s]+", valid_users.strip())[0]
+            block += f"   force user = {first_user}\n"
     block += "\n"
     return block
 
@@ -180,14 +183,16 @@ def fix_permissions(name):
     if not os.path.isdir(path):
         return False, f"Diretório não existe: {path}"
 
-    valid_users = share.get("valid_users", "").strip()
-    writeable   = share.get("writeable", "yes") == "yes"
-    qpath       = shlex.quote(path)
-    cmds        = []
+    valid_users  = share.get("valid_users", "").strip()
+    writeable    = share.get("writeable", "yes") == "yes"
+    time_machine = share.get("time_machine", False)
+    qpath        = shlex.quote(path)
+    cmds         = []
 
     if valid_users:
         first_user = re.split(r"[,\s]+", valid_users)[0]
-        mode = "0770" if writeable else "0750"
+        # Time Machine needs exclusive ownership (0700); Samba's force user handles access
+        mode = "0700" if time_machine else ("0770" if writeable else "0750")
         cmds = [
             f"chown -R {shlex.quote(first_user)}:{shlex.quote(first_user)} {qpath}",
             f"chmod -R {mode} {qpath}",
