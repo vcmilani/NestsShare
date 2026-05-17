@@ -435,6 +435,7 @@ pre{background:#0f1118;border:1px solid var(--border);border-radius:0 0 var(--r)
               {% else %}<span class="badge badge-blue">🗂 Geral</span>{% endif %}
             </td>
             <td class="col-actions">
+              <button class="btn-icon" onclick="fixSharePermissions('{{ s.name }}')" title="Corrigir permissões">🔧</button>
               <button class="btn-icon" onclick="deleteShare('{{ s.name }}')" title="Remover">🗑</button>
             </td>
           </tr>
@@ -914,6 +915,13 @@ async function deleteShare(name) {
   const res = await fetch('/api/shares/'+name, { method:'DELETE' }).then(r=>r.json());
   if (res.ok) { toast('Share removido.'); document.getElementById('share-row-'+name)?.remove(); }
   else toast('Erro: ' + res.error, false);
+}
+
+async function fixSharePermissions(name) {
+  if (!confirm(`Corrigir permissões da pasta do share "${name}"?\n\nIsso aplica chown e chmod no diretório configurado.`)) return;
+  const res = await fetch('/api/shares/'+name+'/fix-permissions', { method:'POST' }).then(r=>r.json());
+  if (res.ok) toast('Permissões corrigidas:\n' + res.message);
+  else toast('Erro: ' + res.message, false);
 }
 
 // ── Users ──────────────────────────────────────────────────────────────────

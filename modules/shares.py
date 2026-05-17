@@ -1,5 +1,5 @@
 """NestShare — SMB Shares module"""
-import subprocess, os, re, configparser, io
+import subprocess, os, re, configparser, io, shlex
 
 SMB_CONF     = "/etc/samba/smb.conf"
 AVAHI_SERVICE = "/etc/avahi/services/samba.service"
@@ -167,6 +167,44 @@ def add_share(share_cfg, workgroup="WORKGROUP"):
         _run("systemctl reload smbd 2>/dev/null || systemctl restart smbd 2>/dev/null")
         _update_avahi(existing)
     return ok, err
+
+def fix_permissions(name):
+    """Apply correct filesystem permissions to a share's path based on its config."""
+    found = [s for s in parse_shares() if s["name"] == name]
+    if not found:
+        return False, f"Share '{name}' não encontrado."
+    share = found[0]
+    path = share.get("path", "").strip()
+    if not path:
+        return False, "Caminho não definido no share."
+    if not os.path.isdir(path):
+        return False, f"Diretório não existe: {path}"
+
+    valid_users = share.get("valid_users", "").strip()
+    writeable   = share.get("writeable", "yes") == "yes"
+    qpath       = shlex.quote(path)
+    cmds        = []
+
+    if valid_users:
+        first_user = re.split(r"[,\s]+", valid_users)[0]
+        mode = "0770" if writeable else "0750"
+        cmds = [
+            f"chown -R {shlex.quote(first_user)}:{shlex.quote(first_user)} {qpath}",
+            f"chmod -R {mode} {qpath}",
+        ]
+    else:
+        mode = "0775" if writeable else "0755"
+        cmds = [
+            f"chown -R nobody:nogroup {qpath}",
+            f"chmod -R {mode} {qpath}",
+        ]
+
+    for cmd in cmds:
+        _, err, rc = _run(cmd)
+        if rc != 0:
+            return False, f"Erro ao executar `{cmd}`: {err}"
+
+    return True, "\n".join(cmds)
 
 def remove_share(name, workgroup="WORKGROUP"):
     existing = [s for s in parse_shares() if s["name"] != name]

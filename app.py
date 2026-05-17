@@ -165,6 +165,12 @@ def api_shares_delete(name):
     ok, err = shares.remove_share(name)
     return jsonify({"ok": ok, "error": err})
 
+@app.route("/api/shares/<name>/fix-permissions", methods=["POST"])
+@login_required
+def api_shares_fix_permissions(name):
+    ok, msg = shares.fix_permissions(name)
+    return jsonify({"ok": ok, "message": msg})
+
 @app.route("/api/shares/preview", methods=["POST"])
 @login_required
 def api_shares_preview():
