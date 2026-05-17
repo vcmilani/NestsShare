@@ -413,6 +413,7 @@ pre{background:#0f1118;border:1px solid var(--border);border-radius:0 0 var(--r)
   <div class="page" id="page-shares">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div></div>
+      <button class="btn btn-outline" onclick="reloadSharesConf()" title="Regera smb.conf a partir dos shares atuais e recarrega o smbd">↻ Reaplicar configuração</button>
       <button class="btn btn-primary" onclick="openModal('modal-add-share')">+ Novo compartilhamento</button>
     </div>
 
@@ -915,6 +916,13 @@ async function deleteShare(name) {
   const res = await fetch('/api/shares/'+name, { method:'DELETE' }).then(r=>r.json());
   if (res.ok) { toast('Share removido.'); document.getElementById('share-row-'+name)?.remove(); }
   else toast('Erro: ' + res.error, false);
+}
+
+async function reloadSharesConf() {
+  if (!confirm('Regerar smb.conf a partir dos compartilhamentos atuais e recarregar o smbd?')) return;
+  const res = await fetch('/api/shares/reload', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' }).then(r=>r.json());
+  if (res.ok) toast(res.message);
+  else toast('Erro: ' + res.message, false);
 }
 
 async function fixSharePermissions(name) {

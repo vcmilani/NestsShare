@@ -171,6 +171,13 @@ def api_shares_fix_permissions(name):
     ok, msg = shares.fix_permissions(name)
     return jsonify({"ok": ok, "message": msg})
 
+@app.route("/api/shares/reload", methods=["POST"])
+@login_required
+def api_shares_reload():
+    data = request.get_json(force=True) or {}
+    ok, msg = shares.reload_shares(data.get("workgroup", "WORKGROUP"))
+    return jsonify({"ok": ok, "message": msg})
+
 @app.route("/api/shares/preview", methods=["POST"])
 @login_required
 def api_shares_preview():

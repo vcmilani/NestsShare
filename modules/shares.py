@@ -88,6 +88,9 @@ def _share_block(cfg):
         block += f"   vfs objects = catia fruit streams_xattr\n"
         block += f"   fruit:aapl = yes\n"
         block += f"   fruit:time machine = yes\n"
+        block += f"   ea support = yes\n"
+        block += f"   create mask = 0600\n"
+        block += f"   directory mask = 0700\n"
         if max_size_gb:
             block += f"   fruit:time machine max size = {max_size_gb}G\n"
         if valid_users:
@@ -210,6 +213,18 @@ def fix_permissions(name):
             return False, f"Erro ao executar `{cmd}`: {err}"
 
     return True, "\n".join(cmds)
+
+def reload_shares(workgroup="WORKGROUP"):
+    """Rewrite smb.conf from currently parsed shares and reload smbd."""
+    existing = parse_shares()
+    conf = build_smb_conf(existing, workgroup)
+    ok, err = write_smb_conf(conf)
+    if not ok:
+        return False, err
+    _, err2, rc = _run("systemctl reload smbd 2>/dev/null || systemctl restart smbd 2>/dev/null")
+    if rc != 0:
+        return False, err2
+    return True, f"{len(existing)} share(s) reaplicado(s) e smbd recarregado."
 
 def remove_share(name, workgroup="WORKGROUP"):
     existing = [s for s in parse_shares() if s["name"] != name]
